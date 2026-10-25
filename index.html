@@ -6,7 +6,7 @@
 <title>Desk Buddy</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&family=Press+Start+2P&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=Nunito:wght@700&family=JetBrains+Mono:wght@500&family=Press+Start+2P&display=swap">
 <style>
 /* Layout: one calm column, a chat thread with a pinned composer; a tiny
    replica of the 160x128 screen previews what she will see. */
@@ -122,10 +122,10 @@ textarea:focus-visible { outline: none; }
 .device { width: 168px; flex: none; background: #2c2533; padding: 4px; border-radius: 8px; }
 .screen { position: relative; width: 160px; height: 128px; background: var(--screen); overflow: hidden; image-rendering: pixelated; }
 .screen .bar { height: 11px; background: #46195a; color: #fff; font: 6px/11px var(--pixel); padding: 0 2px; display: flex; justify-content: space-between; white-space: nowrap; overflow: hidden; }
-.screen .lines { position: absolute; inset: 16px 4px 14px; display: flex; flex-direction: column; justify-content: center; gap: 4px; color: #fff; }
-.screen .lines.small { justify-content: flex-start; gap: 4px; }
-.screen .lines div { font: 8px/8px var(--pixel); white-space: pre; }
-.screen .lines.big div { font-size: 16px; line-height: 16px; text-align: center; }
+.screen .lines { position: absolute; left: 6px; right: 6px; top: 18px; height: 79px; overflow: hidden;
+  display: flex; align-items: center; justify-content: center; color: #f0ecf5;
+  font: 700 15px/19px "Nunito", var(--body); text-align: center; overflow-wrap: anywhere; }
+.screen .lines.scrolls { align-items: flex-start; }
 .screen .foot { position: absolute; bottom: 3px; left: 0; right: 0; text-align: center; font: 6px var(--pixel); color: #4a4258; }
 .preview p { margin: 0; font-size: 13px; color: var(--muted); max-width: 38ch; }
 
@@ -204,9 +204,9 @@ textarea:focus-visible { outline: none; }
         <div class="device"><div class="screen">
           <div class="bar"><span id="pv-from">From you</span><span>now</span></div>
           <div class="lines" id="pv-lines"></div>
-          <div class="foot">click: done</div>
+          <div class="foot" id="pv-foot">Close · Delete</div>
         </div></div>
-        <p>Roughly how it will look on the 1.8" screen. Short messages get the big letters; longer ones use the small font and scroll with the knob.</p>
+        <p>Roughly how it will look on the 1.8" screen. It shows four lines at a time; longer messages scroll up slowly on their own.</p>
       </div>
     </form>
   </div>
@@ -451,13 +451,13 @@ function wrap(text, width) {
 }
 function renderPreview() {
   if ($("preview").hidden) return;
-  const t = forDevice(textEl.value || "Hi! <3").replace(/[^\x20-\x7E\n]/g, "?").replace(/<3/g, "♥");
-  let lines = wrap(t, 10), big = true;
-  if (lines.length > 4) { lines = wrap(t, 19).slice(0, 10); big = false; }
+  const t = forDevice(textEl.value || "Hi! <3").replace(/[^\x20-\x7E\n]/g, "?").replace(/<3/g, "\u2665");
   const box = $("pv-lines");
-  box.className = "lines " + (big ? "big" : "small");
-  box.replaceChildren(...lines.map((l) => { const d = document.createElement("div"); d.textContent = l || " "; return d; }));
-  $("pv-from").textContent = cfg.from ? "From " + cfg.from.slice(0, 12) : "Message";
+  box.textContent = t;
+  // The device shows 4 lines at a time and scrolls longer messages
+  const scrolls = box.scrollHeight > box.clientHeight + 2;
+  box.classList.toggle("scrolls", scrolls);
+  $("pv-from").textContent = "From " + ((cfg.from || "Zohaib").slice(0, 10));
 }
 textEl.addEventListener("input", updateComposer);
 textEl.addEventListener("keydown", (e) => {
