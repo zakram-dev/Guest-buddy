@@ -100,6 +100,7 @@ input:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px
 .status[data-s="read"] { color: var(--read); }
 .status[data-s="waiting"] { color: var(--wait); }
 .status[data-s="failed"] { color: var(--bad); }
+.msg:has(.status[data-s="deleted"]) .bubble { opacity: 0.55; }
 
 /* ---- composer ---- */
 .composer { position: sticky; bottom: 0; background: linear-gradient(to bottom, transparent, var(--bg) 18px);
@@ -323,6 +324,7 @@ const ICONS = {
 };
 function statusOf(m) {
   const s = statuses.get(m.id);
+  if (s && s.x) return { s: "deleted", icon: "two", label: "Read, then deleted " + when(s.x) };
   if (s && s.r) return { s: "read", icon: "two", label: "Read " + when(s.r) };
   if (s && s.d) return { s: "delivered", icon: "two", label: "Delivered " + when(s.d) };
   const p = pending.get(m.id);
